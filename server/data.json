@@ -1,0 +1,109 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "$2b$10$Br79Ty2gPc5JVOVrE3R8N.cLR7wD8Bse.ll1bMcS/E1iEx5zOa00S",
+      "role": "admin"
+    }
+  ],
+  "navItems": [
+    {
+      "id": 1775893557142,
+      "category": "搜索引擎",
+      "items": [
+        {
+          "id": 1775893557200,
+          "name": "Google",
+          "externalUrl": "https://www.google.com",
+          "internalUrl": "https://www.google.com",
+          "icon": "🔍",
+          "description": "全球最大搜索引擎"
+        },
+        {
+          "id": 1775893557203,
+          "name": "百度",
+          "externalUrl": "https://www.baidu.com",
+          "internalUrl": "https://www.baidu.com",
+          "icon": "🎯",
+          "description": "中文搜索引擎"
+        },
+        {
+          "id": 1775893557207,
+          "name": "Bing",
+          "externalUrl": "https://www.bing.com",
+          "internalUrl": "https://www.bing.com",
+          "icon": "🔎",
+          "description": "微软搜索引擎"
+        }
+      ]
+    },
+    {
+      "id": 1775893557130,
+      "category": "开发工具",
+      "items": [
+        {
+          "id": 1775893557150,
+          "name": "MDN",
+          "externalUrl": "https://developer.mozilla.org",
+          "internalUrl": "http://internal.mozilla.org",
+          "icon": "📚",
+          "description": "Web开发文档"
+        },
+        {
+          "id": 1775893557156,
+          "name": "GitHub",
+          "externalUrl": "https://github.com",
+          "internalUrl": "http://internal.github.com",
+          "icon": "💻",
+          "description": "代码托管平台"
+        }
+      ]
+    },
+    {
+      "id": 1775893557136,
+      "category": "在线工具",
+      "items": [
+        {
+          "id": 1775893557183,
+          "name": "Canva",
+          "externalUrl": "https://www.canva.com",
+          "internalUrl": "http://internal.canva.com",
+          "icon": "🎨",
+          "description": "在线设计工具"
+        },
+        {
+          "id": 1775893557187,
+          "name": "Notion",
+          "externalUrl": "https://www.notion.so",
+          "internalUrl": "http://internal.notion.so",
+          "icon": "📝",
+          "description": "笔记协作工具"
+        },
+        {
+          "id": 1775893557191,
+          "name": "Stack Overflow",
+          "externalUrl": "https://stackoverflow.com",
+          "internalUrl": "http://internal.stackoverflow.com",
+          "icon": "❓",
+          "description": "开发者问答3"
+        },
+        {
+          "id": 1775893557195,
+          "name": "Figma",
+          "externalUrl": "https://www.figma.com",
+          "internalUrl": "http://internal.figma.com",
+          "icon": "✏️",
+          "description": "UI设计工具"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "siteName": "Nav-Panel",
+    "siteIcon": "",
+    "backgroundImage": "",
+    "useBingBackground": false
+  },
+  "categories": []
+}

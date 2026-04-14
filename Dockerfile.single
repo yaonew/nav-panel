@@ -1,0 +1,58 @@
+# Stage 1: Build the frontend
+FROM node:16-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy frontend package files
+COPY package*.json ./
+COPY vite.config.js ./
+
+# Install frontend dependencies
+RUN npm install
+
+# Copy frontend source code
+COPY src/ ./src/
+COPY index.html ./
+# COPY public/ ./public/
+COPY .env.production ./
+
+# Build the frontend
+RUN npm run build
+
+# Stage 2: Setup backend and serve both
+FROM node:16-alpine
+
+# Install serve for static files, pm2 for process management, and http-proxy for proxy server
+RUN npm install -g serve pm2 http-proxy
+
+WORKDIR /app
+
+# Copy backend package files and install dependencies
+COPY server/package*.json ./server/
+WORKDIR /app/server
+RUN npm install
+
+# Copy backend source code
+WORKDIR /app
+COPY server/ ./server/
+
+# Copy frontend build from builder stage
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+# Install http-proxy in the frontend dist directory
+WORKDIR /app/frontend/dist
+RUN npm init -y && npm install http-proxy
+
+WORKDIR /app
+
+# Copy PM2 ecosystem config and startup script
+COPY ecosystem.config.js .
+COPY start-frontend.sh .
+RUN chmod +x start-frontend.sh
+
+# Expose ports (frontend: 3000, backend: 3001)
+EXPOSE 3000 3001
+
+# Start both services with PM2
+CMD ["pm2-runtime", "start", "/app/ecosystem.config.js"]
+
