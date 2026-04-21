@@ -73,6 +73,11 @@
   }
 
   onMount(async () => {
+    // 加载 Iconify 图标库
+    const iconifyScript = document.createElement('script');
+    iconifyScript.src = 'https://code.iconify.design/3/3.1.0/iconify.min.js';
+    document.head.appendChild(iconifyScript);
+
     // 更新时间
     updateTime();
     setInterval(updateTime, 1000);
@@ -804,9 +809,7 @@
   }
 </script>
 
-<svelte:head>
-  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-</svelte:head>
+
 
 <svelte:window on:click={handleClickOutside} />
 

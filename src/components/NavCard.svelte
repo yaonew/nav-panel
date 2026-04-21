@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
 
   export let item;
   export let isLoggedIn;
@@ -16,13 +16,10 @@
 
   let iconSvg = '';
 
-  async function renderIcon() {
+  function renderIcon() {
     if (isIconifyIcon && window.Iconify) {
       try {
-        const iconData = await window.Iconify.getIcon(item.icon);
-        if (iconData) {
-          iconSvg = window.Iconify.renderHTML(item.icon, { width: '1.4rem', height: '1.4rem' }) || '';
-        }
+        iconSvg = window.Iconify.renderHTML(item.icon, { width: '1.4rem', height: '1.4rem' }) || '';
       } catch (e) {
         iconSvg = '';
       }
@@ -62,6 +59,8 @@
     dispatch('drop', { item, categoryId, index });
   }
 </script>
+
+
 
 <div 
   class="nav-card"
