@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
 
   export let item;
   export let isLoggedIn;
@@ -13,6 +13,26 @@
 
   // Check if icon is an Iconify icon (contains :)
   $: isIconifyIcon = item.icon && item.icon.includes(':');
+
+  let iconSvg = '';
+
+  async function renderIcon() {
+    if (isIconifyIcon && window.Iconify) {
+      try {
+        const iconData = await window.Iconify.getIcon(item.icon);
+        if (iconData) {
+          iconSvg = window.Iconify.renderHTML(item.icon, { width: '1.4rem', height: '1.4rem' }) || '';
+        }
+      } catch (e) {
+        iconSvg = '';
+      }
+    }
+  }
+
+  $: if (item.icon) {
+    iconSvg = '';
+    renderIcon();
+  }
 
   function handleEdit() {
     dispatch('edit', { item, categoryId });
@@ -43,12 +63,6 @@
   }
 </script>
 
-<svelte:head>
-  {#if isIconifyIcon}
-    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-  {/if}
-</svelte:head>
-
 <div 
   class="nav-card"
   class:draggable={isLoggedIn}
@@ -61,7 +75,7 @@
   <a href={currentUrl} target="_blank" rel="noopener noreferrer" class="card-link">
     <div class="card-icon">
       {#if isIconifyIcon}
-        <span class="iconify" data-icon={item.icon} data-width="1.4rem"></span>
+        {@html iconSvg}
       {:else}
         {item.icon}
       {/if}

@@ -1,4 +1,4 @@
-# 导航页 - Nav
+# 导航页 - Nav-Panel
 [![Github](https://img.shields.io/badge/Github-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/yaonew/nav-panel)
 [![Gitee](https://img.shields.io/badge/Gitee-C71D23?style=flat-square&logo=gitee&logoColor=white)](https://gitee.com/yaonew/nav-panel)
 [![docker](https://img.shields.io/badge/docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/yaonew/nav-panel)

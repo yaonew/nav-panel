@@ -21,20 +21,20 @@
           "description": "全球最大搜索引擎"
         },
         {
-          "id": 1775893557203,
-          "name": "百度",
-          "externalUrl": "https://www.baidu.com",
-          "internalUrl": "https://www.baidu.com",
-          "icon": "🎯",
-          "description": "中文搜索引擎"
-        },
-        {
           "id": 1775893557207,
           "name": "Bing",
           "externalUrl": "https://www.bing.com",
           "internalUrl": "https://www.bing.com",
           "icon": "🔎",
           "description": "微软搜索引擎"
+        },
+        {
+          "id": 1775893557203,
+          "name": "百度",
+          "externalUrl": "https://www.baidu.com",
+          "internalUrl": "https://www.baidu.com",
+          "icon": "🎯",
+          "description": "中文搜索引擎"
         }
       ]
     },
@@ -49,6 +49,14 @@
           "internalUrl": "http://internal.mozilla.org",
           "icon": "📚",
           "description": "Web开发文档"
+        },
+        {
+          "id": 1775893557195,
+          "name": "Figma",
+          "externalUrl": "https://www.figma.com",
+          "internalUrl": "http://internal.figma.com",
+          "icon": "✏️",
+          "description": "UI设计工具"
         },
         {
           "id": 1775893557156,
@@ -87,14 +95,6 @@
           "internalUrl": "http://internal.stackoverflow.com",
           "icon": "❓",
           "description": "开发者问答3"
-        },
-        {
-          "id": 1775893557195,
-          "name": "Figma",
-          "externalUrl": "https://www.figma.com",
-          "internalUrl": "http://internal.figma.com",
-          "icon": "✏️",
-          "description": "UI设计工具"
         }
       ]
     }

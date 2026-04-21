@@ -32,9 +32,9 @@
 
   // 搜索引擎配置
   const searchEngines = [
-    { id: 'google', name: 'Google', icon: 'mdi:google', url: 'https://www.google.com/search?q=' },
+    { id: 'google', name: 'Google', icon: 'material-icon-theme:google', url: 'https://www.google.com/search?q=' },
     { id: 'baidu', name: '百度', icon: 'simple-icons:baidu', url: 'https://www.baidu.com/s?wd=' },
-    { id: 'bing', name: 'Bing', icon: 'mdi:microsoft-bing', url: 'https://www.bing.com/search?q=' }
+    { id: 'bing', name: 'Bing', icon: 'cib:bing', url: 'https://www.bing.com/search?q=' }
   ];
 
   // Check if icon is Iconify icon
@@ -172,6 +172,12 @@
     localStorage.removeItem('token');
   }
 
+  // 处理令牌失效
+  function handleTokenExpired() {
+    handleLogout();
+    showNotification('登录已过期，请重新登录', 'error');
+  }
+
   async function handleChangePassword(data) {
     try {
       const token = localStorage.getItem('token');
@@ -184,11 +190,15 @@
         body: JSON.stringify(data)
       });
       
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         showNotification('密码修改成功');
       } else {
-        const error = await response.json();
-        showNotification(error.message || '密码修改失败');
+        showNotification(result.message || '密码修改失败');
       }
     } catch (error) {
       showNotification('密码修改失败');
@@ -207,6 +217,11 @@
         body: JSON.stringify(data)
       });
       
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         await loadSettings();
         showNotification('设置保存成功');
@@ -230,9 +245,13 @@
         body: JSON.stringify(data)
       });
       
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
-        const newCategory = await response.json();
-        navItems = [...navItems, { ...newCategory.category, items: [] }];
+        navItems = [...navItems, { ...result.category, items: [] }];
         showNotification('分组添加成功');
       } else {
         showNotification('分组添加失败');
@@ -254,6 +273,11 @@
         body: JSON.stringify({ name: data.name })
       });
       
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         navItems = navItems.map(cat => 
           cat.id === data.id ? { ...cat, category: data.name } : cat
@@ -277,6 +301,11 @@
         }
       });
       
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         navItems = navItems.filter(cat => cat.id !== data.id);
         showNotification('分组删除成功');
@@ -298,6 +327,11 @@
         }
       });
       
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         // Update local state
         navItems = navItems.map(cat => {
@@ -330,6 +364,11 @@
         body: JSON.stringify(data)
       });
       
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         // Reorder categories locally
         const sourceIndex = navItems.findIndex(c => c.id === data.sourceId);
@@ -363,6 +402,11 @@
         }
       });
       
+      const clearResult = await clearResponse.json();
+      if (!clearResult.success && clearResult.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (!clearResponse.ok) {
         throw new Error('清空数据失败');
       }
@@ -458,6 +502,11 @@
         body: JSON.stringify(data)
       });
 
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         await loadNavItems();
         showNotification('导航添加成功');
@@ -481,6 +530,11 @@
         body: JSON.stringify(data)
       });
 
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         await loadNavItems();
         showNotification('导航更新成功');
@@ -536,6 +590,13 @@
         body: JSON.stringify(data)
       });
 
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        showModal = false;
+        editingItem = null;
+        return;
+      }
       if (response.ok) {
         await loadNavItems();
         showNotification(editingItem ? '导航已更新' : '导航已添加');
@@ -673,11 +734,15 @@
         body: JSON.stringify(navItems)
       });
 
+      const result = await response.json();
+      if (!result.success && result.message === '令牌无效') {
+        handleTokenExpired();
+        return;
+      }
       if (response.ok) {
         showNotification('顺序已保存');
       } else {
-        const errorData = await response.json();
-        showNotification('保存顺序失败: ' + (errorData.message || '未知错误'));
+        showNotification('保存顺序失败: ' + (result.message || '未知错误'));
         await loadNavItems();
       }
     } catch (error) {
@@ -772,6 +837,11 @@
             bind:value={searchQuery}
             on:keydown={handleSearchKeydown}
           />
+          {#if searchQuery}
+            <button class="clear-btn" on:click={() => searchQuery = ''} title="清空搜索">
+              ✕
+            </button>
+          {/if}
           <div class="search-hint">回车搜索</div>
         </div>
       </div>
@@ -1126,6 +1196,28 @@
     white-space: nowrap;
   }
 
+  .clear-btn {
+    position: absolute;
+    right: 70px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .clear-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
   .loading {
     text-align: center;
     padding: 40px;
@@ -1140,7 +1232,7 @@
 
   .category-section {
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(1px);
     border-radius: 12px;
     padding: 14px;
     border: 1px solid rgba(255, 255, 255, 0.12);
