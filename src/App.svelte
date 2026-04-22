@@ -78,6 +78,30 @@
     iconifyScript.src = 'https://code.iconify.design/3/3.1.0/iconify.min.js';
     document.head.appendChild(iconifyScript);
 
+    // 等待 Iconify 加载完成后预加载常用图标
+    await new Promise(resolve => {
+      const checkIconify = setInterval(() => {
+        if (window.Iconify) {
+          clearInterval(checkIconify);
+          // 预加载常用图标
+          window.Iconify.loadIcons([
+            'mdi:home',
+            'mdi:github',
+            'mdi:account',
+            'mdi:settings',
+            'mdi:search',
+            'fa:google',
+            'fa:github',
+            'carbon:logo-twitter'
+          ], () => {
+            // Icons loaded, ready to use
+            console.log('Iconify icons loaded');
+          });
+          resolve();
+        }
+      }, 100);
+    });
+
     // 更新时间
     updateTime();
     setInterval(updateTime, 1000);

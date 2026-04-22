@@ -11,7 +11,6 @@
   let internalUrl = editingItem?.internalUrl || '';
   let icon = editingItem?.icon || '🔗';
   let description = editingItem?.description || '';
-  // Use categoryName if available (for pre-selected category), otherwise find from categoryId
   let category = '';
   if (editingItem?.categoryName) {
     category = editingItem.categoryName;
@@ -21,11 +20,67 @@
   }
   let showIconLibrary = false;
 
-  // Check for pre-selected category on mount
+  function isIconifyIcon(iconStr) {
+    return iconStr && iconStr.includes(':');
+  }
+
+  let iconPreview = '';
+  let exampleIcons = {};
+
+  function renderIcon(iconName, width = '1.5rem') {
+    if (window.Iconify && isIconifyIcon(iconName)) {
+      const svg = window.Iconify.renderSVG(iconName, { width, height: width });
+      if (svg) return svg.outerHTML;
+      const html = window.Iconify.renderHTML(iconName, { width, height: width });
+      if (html) return html;
+    }
+    return null;
+  }
+
+  function updateIconPreview() {
+    if (isIconifyIcon(icon)) {
+      // 先确保图标数据加载完成，再渲染
+      window.Iconify.loadIcons([icon], () => {
+        iconPreview = renderIcon(icon, '1.4rem') || '';
+      });
+    } else {
+      iconPreview = '';
+    }
+  }
+
+  async function initIcons() {
+    if (!window.Iconify) return;
+    
+    const iconList = ['mdi:home', 'mdi:github', 'fa:google', 'carbon:logo-twitter'];
+    if (isIconifyIcon(icon)) {
+      iconList.push(icon);
+    }
+    
+    window.Iconify.loadIcons(iconList, () => {
+      iconList.forEach(name => {
+        const svg = renderIcon(name, '1rem');
+        if (svg) exampleIcons[name] = svg;
+      });
+      updateIconPreview();
+    });
+  }
+
   onMount(() => {
     if (!editingItem && window._preSelectedCategory) {
       category = window._preSelectedCategory.name;
       delete window._preSelectedCategory;
+    }
+    // Wait for Iconify to be ready
+    const checkIconify = setInterval(() => {
+      if (window.Iconify) {
+        clearInterval(checkIconify);
+        initIcons();
+      }
+    }, 100);
+    // Also try immediately in case Iconify is already loaded
+    if (window.Iconify) {
+      clearInterval(checkIconify);
+      initIcons();
     }
   });
 
@@ -36,11 +91,8 @@
       alert('请填写完整信息！(外网地址为必填项)');
       return;
     }
-
-    // Find categoryId from category name
     const categoryObj = categories.find(c => c.name === category.trim());
     const categoryId = categoryObj ? categoryObj.id : null;
-
     dispatch('save', {
       name: name.trim(),
       externalUrl: externalUrl.trim(),
@@ -103,7 +155,7 @@
             <button 
               class="emoji-btn" 
               class:selected={icon === emoji}
-              on:click={() => icon = emoji}
+              on:click={() => { icon = emoji; updateIconPreview(); }}
             >
               {emoji}
             </button>
@@ -113,9 +165,17 @@
           <input 
             type="text" 
             bind:value={icon} 
+            on:input={updateIconPreview}
             placeholder="输入图标或使用在线图标库" 
             class="icon-input"
           />
+          <div class="icon-preview">
+            {#if isIconifyIcon(icon)}
+              {@html iconPreview}
+            {:else}
+              {icon}
+            {/if}
+          </div>
           <button 
             type="button" 
             class="icon-library-btn" 
@@ -133,10 +193,22 @@
             <p class="help-text">4. 粘贴到上方输入框中</p>
             <div class="icon-examples">
               <span class="example-label">常用图标示例：</span>
-              <button class="example-btn" on:click={() => icon = 'mdi:home'}>mdi:home</button>
-              <button class="example-btn" on:click={() => icon = 'mdi:github'}>mdi:github</button>
-              <button class="example-btn" on:click={() => icon = 'fa:google'}>fa:google</button>
-              <button class="example-btn" on:click={() => icon = 'carbon:logo-twitter'}>carbon:logo-twitter</button>
+              <button class="example-btn" on:click={() => { icon = 'mdi:home'; updateIconPreview(); }}>
+                <span class="example-icon">{@html exampleIcons['mdi:home'] || 'mdi:home'}</span>
+                <span>mdi:home</span>
+              </button>
+              <button class="example-btn" on:click={() => { icon = 'mdi:github'; updateIconPreview(); }}>
+                <span class="example-icon">{@html exampleIcons['mdi:github'] || 'mdi:github'}</span>
+                <span>mdi:github</span>
+              </button>
+              <button class="example-btn" on:click={() => { icon = 'fa:google'; updateIconPreview(); }}>
+                <span class="example-icon">{@html exampleIcons['fa:google'] || 'fa:google'}</span>
+                <span>fa:google</span>
+              </button>
+              <button class="example-btn" on:click={() => { icon = 'carbon:logo-twitter'; updateIconPreview(); }}>
+                <span class="example-icon">{@html exampleIcons['carbon:logo-twitter'] || 'carbon:logo-twitter'}</span>
+                <span>carbon:logo-twitter</span>
+              </button>
             </div>
           </div>
         {/if}
@@ -309,6 +381,23 @@
     flex: 1;
   }
 
+  .icon-preview {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1.2rem;
+  }
+
+  .icon-preview :global(svg) {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
   .icon-library-btn {
     padding: 8px 16px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -387,6 +476,14 @@
     font-size: 0.85rem;
     font-family: monospace;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .example-icon {
+    display: flex;
+    align-items: center;
   }
 
   .example-btn:hover {
