@@ -15,20 +15,43 @@
   $: isIconifyIcon = item.icon && item.icon.includes(':');
 
   let iconSvg = '';
+  let iconLoaded = false;
 
   function renderIcon() {
     if (isIconifyIcon && window.Iconify) {
       try {
         iconSvg = window.Iconify.renderHTML(item.icon, { width: '1.4rem', height: '1.4rem' }) || '';
+        iconLoaded = true;
       } catch (e) {
         iconSvg = '';
       }
     }
   }
 
+  // 异步加载图标
+  function loadIconAsync() {
+    if (!isIconifyIcon) {
+      iconLoaded = true;
+      return;
+    }
+    
+    // 如果 Iconify 还没准备好，延迟重试
+    if (!window.Iconify) {
+      setTimeout(loadIconAsync, 100);
+      return;
+    }
+    
+    // 异步加载图标数据
+    window.Iconify.loadIcons([item.icon], () => {
+      renderIcon();
+    });
+  }
+
   $: if (item.icon) {
     iconSvg = '';
-    renderIcon();
+    iconLoaded = false;
+    // 异步加载，不阻塞渲染
+    setTimeout(loadIconAsync, 0);
   }
 
   function handleEdit() {
@@ -73,8 +96,11 @@
 >
   <a href={currentUrl} target="_blank" rel="noopener noreferrer" class="card-link">
     <div class="card-icon">
-      {#if isIconifyIcon}
+      {#if isIconifyIcon && iconLoaded}
         {@html iconSvg}
+      {:else if isIconifyIcon && !iconLoaded}
+        <!-- 加载中显示默认图标 -->
+        🔗
       {:else}
         {item.icon}
       {/if}
@@ -92,9 +118,9 @@
 <style>
   .nav-card {
     position: relative;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(8px);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
     transition: all 0.2s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -142,6 +168,15 @@
     justify-content: center;
     filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
     transition: transform 0.2s ease;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    margin-bottom: 4px;
+  }
+
+  .card-icon :global(svg) {
+    width: 1.6rem;
+    height: 1.6rem;
   }
 
   .nav-card:hover .card-icon {

@@ -37,6 +37,9 @@
     { id: 'bing', name: 'Bing', icon: 'cib:bing', url: 'https://www.bing.com/search?q=' }
   ];
 
+  // 搜索引擎图标加载状态
+  let searchEngineIconsLoaded = {};
+
   // Check if icon is Iconify icon
   function isIconifyIcon(icon) {
     return icon && icon.includes(':');
@@ -73,34 +76,32 @@
   }
 
   onMount(async () => {
-    // 加载 Iconify 图标库
+    // 加载 Iconify 图标库（异步，不阻塞页面渲染）
     const iconifyScript = document.createElement('script');
     iconifyScript.src = 'https://code.iconify.design/3/3.1.0/iconify.min.js';
     document.head.appendChild(iconifyScript);
 
-    // 等待 Iconify 加载完成后预加载常用图标
-    await new Promise(resolve => {
-      const checkIconify = setInterval(() => {
-        if (window.Iconify) {
-          clearInterval(checkIconify);
-          // 预加载常用图标
-          window.Iconify.loadIcons([
-            'mdi:home',
-            'mdi:github',
-            'mdi:account',
-            'mdi:settings',
-            'mdi:search',
-            'fa:google',
-            'fa:github',
-            'carbon:logo-twitter'
-          ], () => {
-            // Icons loaded, ready to use
-            console.log('Iconify icons loaded');
+    // 异步等待 Iconify 加载完成后加载搜索引擎图标
+    const waitForIconify = () => {
+      if (window.Iconify) {
+        // 加载搜索引擎图标
+        const engineIcons = searchEngines
+          .filter(e => isIconifyIcon(e.icon))
+          .map(e => e.icon);
+        if (engineIcons.length > 0) {
+          window.Iconify.loadIcons(engineIcons, () => {
+            searchEngineIconsLoaded = {};
+            engineIcons.forEach(icon => {
+              searchEngineIconsLoaded[icon] = true;
+            });
+            searchEngineIconsLoaded = { ...searchEngineIconsLoaded };
           });
-          resolve();
         }
-      }, 100);
-    });
+      } else {
+        setTimeout(waitForIconify, 100);
+      }
+    };
+    waitForIconify();
 
     // 更新时间
     updateTime();
@@ -158,6 +159,37 @@
       navItems = getDefaultNavItems();
     } finally {
       loading = false;
+      // 异步加载图标，不阻塞页面显示
+      setTimeout(preloadIconifyIcons, 100);
+    }
+  }
+
+  // 异步收集并预加载所有使用的 Iconify 图标
+  function preloadIconifyIcons() {
+    if (!window.Iconify) {
+      // Iconify 还没加载完成，延迟重试
+      setTimeout(preloadIconifyIcons, 200);
+      return;
+    }
+    
+    const iconSet = new Set();
+    // 收集搜索引擎图标
+    searchEngines.forEach(engine => {
+      if (isIconifyIcon(engine.icon)) {
+        iconSet.add(engine.icon);
+      }
+    });
+    // 收集导航项图标
+    navItems.forEach(category => {
+      category.items?.forEach(item => {
+        if (isIconifyIcon(item.icon)) {
+          iconSet.add(item.icon);
+        }
+      });
+    });
+    
+    if (iconSet.size > 0) {
+      window.Iconify.loadIcons([...iconSet]);
     }
   }
 
@@ -848,7 +880,7 @@
       <div class="search-container">
         <div class="search-box">
           <div class="search-engine-selector" on:click|stopPropagation={toggleSearchEngineDropdown}>
-            {#key selectedSearchEngine}
+            {#key selectedSearchEngine + '_' + (searchEngineIconsLoaded[searchEngines.find(e => e.id === selectedSearchEngine)?.icon] ? 'loaded' : 'loading')}
               <div class="selected-engine">
                 {#if isIconifyIcon(searchEngines.find(e => e.id === selectedSearchEngine)?.icon)}
                   <span class="iconify" data-icon={searchEngines.find(e => e.id === selectedSearchEngine)?.icon} data-width="1.5rem"></span>
@@ -1098,7 +1130,7 @@
     position: relative;
     width: 100%;
     max-width: 600px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     border-radius: 40px;
     padding: 8px 16px;
@@ -1106,16 +1138,16 @@
     align-items: center;
     gap: 6px;
     transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .search-box:hover {
-    background: rgba(255, 255, 255, 0.16);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.25);
+    border-color: rgba(255, 255, 255, 0.2);
   }
 
   .search-box:focus-within {
-    background: rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.3);
     border-color: rgba(255, 255, 255, 0.3);
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
   }
@@ -1258,11 +1290,11 @@
   }
 
   .category-section {
-    background: rgba(255, 255, 255, 0.08);
+    /*background: rgba(255, 255, 255, 0.08);*/
     backdrop-filter: blur(1px);
     border-radius: 12px;
     padding: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    /*border: 1px solid rgba(255, 255, 255, 0.12);*/
   }
 
   .category-title {
